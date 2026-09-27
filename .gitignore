@@ -1,0 +1,9 @@
+node_modules/
+dist/
+output/
+.vite/
+*.log
+test-fonts/
+scratch-*.ts
+diag-*.ts
+gen-charset-probes.ts

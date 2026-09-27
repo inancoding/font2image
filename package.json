@@ -1,0 +1,29 @@
+{
+  "name": "font2image",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "本地离线字体预览图生成工具（字体 → PNG/WebP/JPG）",
+  "scripts": {
+    "gen": "tsx src/cli/index.ts",
+    "ui": "vite",
+    "build:ui": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "opentype.js": "^1.3.4",
+    "playwright-core": "^1.45.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}
