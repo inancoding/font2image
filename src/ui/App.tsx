@@ -77,7 +77,6 @@ export default function App() {
   const [batchLoading, setBatchLoading] = useState(false)
   const [selected, setSelected] = useState<ScriptId[]>([])
   const [format, setFormat] = useState<OutputFormat>('webp')
-  const [sizes, setSizes] = useState<number[]>(DEFAULT_CONFIG.sizes)
   const [transparentBg, setTransparentBg] = useState(false)
   const [toasts, setToasts] = useState<{ id: number; text: string; type: 'error' | 'success' }[]>([])
   const toastIdRef = useRef(0)
@@ -747,13 +746,6 @@ export default function App() {
     })
   }
 
-  function toggleSize(n: number) {
-    setSizes((prev) => {
-      const next = prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
-      return next.length === 0 ? prev : next
-    })
-  }
-
   async function canvasToBytes(canvas: HTMLCanvasElement): Promise<Uint8Array> {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, mimeType(format), format === 'png' ? undefined : DEFAULT_CONFIG.quality / 100),
@@ -1275,7 +1267,7 @@ export default function App() {
               >
                 {generating
                   ? `生成中 ${genDone}/${batchOkCount}…`
-                  : `生成并下载（${batchOkCount} 个字体 × ${sizes.length} 个尺寸 + 封面）`}
+                  : `生成并下载（${batchOkCount} 个字体 + 封面）`}
               </button>
             </section>
           )}
@@ -1293,15 +1285,6 @@ export default function App() {
                       <option value="jpg">jpg（有损，不推荐）</option>
                     </select>
                   </label>
-                  <div className="size-row">
-                    <span className="field-label">尺寸</span>
-                    {DEFAULT_CONFIG.sizes.map((n) => (
-                      <label className="chip" key={n}>
-                        <input type="checkbox" checked={sizes.includes(n)} onChange={() => toggleSize(n)} />
-                        {n}px
-                      </label>
-                    ))}
-                  </div>
                   <label className="chip">
                     <input type="checkbox" checked={transparentBg} onChange={(e) => setTransparentBg(e.target.checked)} />
                     透明背景（jpg 除外）

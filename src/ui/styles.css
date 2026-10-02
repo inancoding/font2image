@@ -379,8 +379,7 @@ body {
 }
 
 /* 复选框（芯片式） */
-.checkbox-row,
-.size-row {
+.checkbox-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
