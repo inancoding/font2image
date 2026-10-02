@@ -221,7 +221,7 @@ export default function App() {
         const w = extractWeight(font, file.name)
         // 规范化家族名：移除常见的字重/风格后缀
         let rawFamily = meta.family.zh || meta.family.en || ''
-        const weightSuffixes = /[-_\s]*(bold|black|heavy|light|medium|normal|regular|semibold|extrabold|extralight|thin|weight\d+)$/i
+        const weightSuffixes = /[-_\s]*(bold|black|heavy|light|medium|normal|regular|semibold|extrabold|extralight|thin|weight\d+|w?\d{2,})$/i
         const familyKey = rawFamily.replace(weightSuffixes, '').toLowerCase().trim()
         if (!familyKey) continue
         parsed.push({ file, bytes, font, meta, familyKey, weightClass: w.weightClass, weightName: w.name })
@@ -517,6 +517,19 @@ export default function App() {
       try { await document.fonts.ready } catch { /* ignore */ }
       if (cancelled) return
 
+      // 预加载背景图片，确保 drawCover 同步绘制时图片已就绪
+      if (coverBgImage) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const img = new Image()
+            img.onload = () => resolve()
+            img.onerror = () => reject(new Error('背景图加载失败'))
+            img.src = coverBgImage
+          })
+        } catch { /* 加载失败则跳过背景图 */ }
+      }
+      if (cancelled) return
+
       // 封面预览
       if (!useOpentypeFallback) {
         const coverCanvas = document.createElement('canvas')
@@ -559,8 +572,6 @@ export default function App() {
           dataUrl: coverCanvas.toDataURL('image/png'),
         })
       }
-
-  const supportsChinese = selected.includes('hans') || selected.includes('hant')
 
       // 多字重预览
       if (multiWeightFaces.length > 1) {
@@ -637,8 +648,8 @@ export default function App() {
         setMultiWeightPreview(null)
       }
 
-      // 单字网格预览（仅当字体支持汉字时）
-      if (supportsChinese) {
+      // 单字网格预览
+      {
         const supportsHans = selected.includes('hans')
         const supportsHant = selected.includes('hant')
         const gridGroups: { label: string; script: string; chars: string[] }[] = []
@@ -709,8 +720,6 @@ export default function App() {
         } else {
           setGridPreview(null)
         }
-      } else {
-        setGridPreview(null)
       }
     })()
 
@@ -821,8 +830,7 @@ export default function App() {
       const base = fontBaseName(loaded.fileName)
 
       // 单字网格
-      const supportsChinese = selected.includes('hans') || selected.includes('hant')
-      if (supportsChinese) {
+      {
         const supportsHans = selected.includes('hans')
         const supportsHant = selected.includes('hant')
         const gridGroups: { label: string; script: string; chars: string[] }[] = []

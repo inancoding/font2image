@@ -202,14 +202,13 @@ export async function processFont(
     generatedAt: new Date().toISOString(),
   })
 
-  // 单字预览网格（仅当字体支持汉字时生成）
-  if (scripts.includes('hans') || scripts.includes('hant')) {
+  // 单字预览网格
+  {
     const gridGroups = CHAR_GRID_GROUPS
-      .map((g) => ({
-        label: g.label,
-        script: g.script,
-        chars: g.chars.filter((c) => hasGlyph(c)),
-      }))
+      .map((g) => {
+        const filtered = g.chars.filter((c) => hasGlyph(c))
+        return { label: g.label, script: g.script, chars: filtered }
+      })
       .filter((g) => g.chars.length > 0)
 
     if (gridGroups.length > 0) {

@@ -68,14 +68,28 @@ function pickName(entry: unknown): { en?: string; zh?: string } {
   }
 }
 
+// opentype.js 的 name 表有两种结构：扁平（names.fontFamily）和按平台嵌套（names.windows.fontFamily）。
+// 此函数兼容两种格式，优先取 windows 平台。
+function resolveNameEntry(names: Record<string, unknown>, key: string): unknown {
+  if (names[key]) return names[key]
+  const windows = names.windows as Record<string, unknown> | undefined
+  if (windows?.[key]) return windows[key]
+  const mac = names.macintosh as Record<string, unknown> | undefined
+  if (mac?.[key]) return mac[key]
+  return undefined
+}
+
 export function extractMeta(font: OTFont, fileName: string): FontMeta {
   const names = font.names as Record<string, unknown>
-  const family = pickName(names.fontFamily)
+  // preferredFamily (nameID 16) 是 OpenType 规范的权威字体族分组依据，
+  // fontFamily (nameID 1) 通常包含字重后缀（如 "X W01"），不适合用于分组
+  const prefFamily = resolveNameEntry(names, 'preferredFamily')
+  const family = pickName(prefFamily ?? resolveNameEntry(names, 'fontFamily'))
   if (!family.en && !family.zh) {
     family.en = fileName.replace(/\.[^.]+$/, '')
   }
-  const styleEntry = pickName(names.fontSubfamily)
-  const licenseEntry = pickName(names.license ?? names.licenseDescription)
+  const styleEntry = pickName(resolveNameEntry(names, 'fontSubfamily'))
+  const licenseEntry = pickName(resolveNameEntry(names, 'license') ?? resolveNameEntry(names, 'licenseDescription'))
   return {
     family,
     style: styleEntry.en ?? styleEntry.zh ?? 'Regular',
@@ -135,27 +149,59 @@ function extractWeightKeyword(s: string): string | undefined {
   return undefined
 }
 
+// 从字符串末尾提取数字字重设计符（如 "W01"、"W02"、"01"、"02"）
+function extractNumericDesignator(s: string): string | undefined {
+  const m = s.replace(/\.[^.]+$/, '').match(/[Ww]?(\d{2,})\s*$/)
+  return m ? `W${m[1]}` : undefined
+}
+
 export function extractWeight(font: OTFont, fileName?: string): WeightInfo {
   const os2 = (font.tables as Record<string, unknown>).os2 as Record<string, unknown> | undefined
   const os2Class = (os2?.usWeightClass as number) ?? 400
 
   const names = font.names as Record<string, unknown>
-  const subfamily = pickName(names.fontSubfamily)
+
+  const prefSub = pickName(resolveNameEntry(names, 'preferredSubfamily'))
+  const prefSubStr = prefSub.en ?? prefSub.zh ?? ''
+
+  const subfamily = pickName(resolveNameEntry(names, 'fontSubfamily'))
   const styleStr = subfamily.en ?? subfamily.zh ?? ''
 
-  let displayName = styleStr
-    .replace(/\b(italic|oblique)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  let displayName = ''
+  if (prefSubStr && !/^regular$/i.test(prefSubStr)) {
+    displayName = prefSubStr
+      .replace(/\b(italic|oblique)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
 
   if (!displayName) {
-    const family = pickName(names.fontFamily)
+    displayName = styleStr
+      .replace(/\b(italic|oblique)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  if (!displayName) {
+    const family = pickName(resolveNameEntry(names, 'preferredFamily') ?? resolveNameEntry(names, 'fontFamily'))
     const familyStr = family.en ?? family.zh ?? ''
     displayName = extractWeightKeyword(familyStr)
-      ?? (fileName ? extractWeightKeyword(fileName) : undefined)
+      ?? extractWeightKeyword(fileName ?? '')
+      ?? extractNumericDesignator(familyStr)
+      ?? extractNumericDesignator(fileName ?? '')
       ?? WEIGHT_NAMES[os2Class]
       ?? `Weight${os2Class}`
   }
 
-  return { weightClass: os2Class, rawOs2Class: os2Class, name: displayName }
+  // 当 os2 权重为默认 400 但存在数字字重设计符时，推导合成权重值
+  let weightClass = os2Class
+  if (os2Class === 400) {
+    const designator = prefSubStr || displayName
+    const wMatch = designator.match(/[Ww]?(\d{2,})/)
+    if (wMatch) {
+      weightClass = parseInt(wMatch[1], 10) * 100
+    }
+  }
+
+  return { weightClass, rawOs2Class: os2Class, name: displayName }
 }
