@@ -22,7 +22,6 @@
     "electron:build:all": "pnpm run build:ui && electron-builder --win --linux --mac --x64"
   },
   "build": {
-    "publish": "never",
     "appId": "com.font2image.app",
     "productName": "字体预览图生成工具",
     "directories": {
