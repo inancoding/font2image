@@ -184,6 +184,7 @@ export interface DrawCoverOptions {
   color: string
   bgImage?: string
   bgOpacity?: number
+  showRibbon?: boolean
 }
 
 export interface DrawCoverResult {
@@ -244,21 +245,23 @@ export function drawCover(canvas: HTMLCanvasElement, opts: DrawCoverOptions): Dr
   const nameWidth = ctx.measureText(opts.name).width
   ctx.fillText(opts.name, (width - nameWidth) / 2, height / 2)
 
-  // 右上角黄色「免费商用」丝带
-  var ribbonH = Math.round(height * 0.18)
-  var ribbonW = Math.round(ribbonH * 6)
-  ctx.save()
-  ctx.translate(width - ribbonH * 1.2, ribbonH * 1.2)
-  ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#f5c518'
-  ctx.fillRect(-ribbonW / 2, -ribbonH / 2, ribbonW, ribbonH)
-  var ribbonFontSize = Math.round(ribbonH * 0.6)
-  ctx.font = 'bold ' + ribbonFontSize + 'px sans-serif'
-  ctx.fillStyle = '#000000'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText('免费商用', 0, 0)
-  ctx.restore()
+  // 右上角黄色「免费商用」丝带（可通过 showRibbon 控制）
+  if (opts.showRibbon !== false) {
+    var ribbonH = Math.round(height * 0.18)
+    var ribbonW = Math.round(ribbonH * 6)
+    ctx.save()
+    ctx.translate(width - ribbonH * 1.2, ribbonH * 1.2)
+    ctx.rotate(Math.PI / 4)
+    ctx.fillStyle = '#f5c518'
+    ctx.fillRect(-ribbonW / 2, -ribbonH / 2, ribbonW, ribbonH)
+    var ribbonFontSize = Math.round(ribbonH * 0.6)
+    ctx.font = 'bold ' + ribbonFontSize + 'px sans-serif'
+    ctx.fillStyle = '#000000'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('免费商用', 0, 0)
+    ctx.restore()
+  }
 
   return { width, height }
 }

@@ -97,6 +97,7 @@ export default function App() {
   const [coverBgImage, setCoverBgImage] = useState<string | null>(null)
   const [coverBgOpacity, setCoverBgOpacity] = useState(0.35)
   const [coverWhiteText, setCoverWhiteText] = useState(false)
+  const [showRibbon, setShowRibbon] = useState(true)
   const faceRef = useRef<FontFace | null>(null)
   const batchFacesRef = useRef<FontFace[]>([])
   const multiWeightFacesRef = useRef<FontFace[]>([])
@@ -547,6 +548,7 @@ export default function App() {
           color: coverColor,
           bgImage: coverBgImage ?? undefined,
           bgOpacity: coverBgOpacity,
+          showRibbon,
         })
         setCoverPreview({
           caption: `封面图 · ${coverDims.width}×${coverDims.height}`,
@@ -566,6 +568,7 @@ export default function App() {
           color: coverColor,
           bgImage: coverBgImage ?? undefined,
           bgOpacity: coverBgOpacity,
+          showRibbon,
         })
         setCoverPreview({
           caption: `封面图 · ${coverDims.width}×${coverDims.height}`,
@@ -724,7 +727,7 @@ export default function App() {
     })()
 
     return () => { cancelled = true }
-  }, [loaded, transparentBg, displayName, useOpentypeFallback, multiWeightFaces, gridBoldFace, poemIndex, selected, coverBgImage, coverBgOpacity, coverWhiteText])
+  }, [loaded, transparentBg, displayName, useOpentypeFallback, multiWeightFaces, gridBoldFace, poemIndex, selected, coverBgImage, coverBgOpacity, coverWhiteText, showRibbon])
 
   useEffect(() => {
     if (lightboxIndex === null) return
@@ -806,6 +809,7 @@ export default function App() {
           color: coverColor,
           bgImage: coverBgImage ?? undefined,
           bgOpacity: coverBgOpacity,
+          showRibbon,
         })
         zipEntries.push({ name: `${fontBaseName(loaded.fileName)}-cover.${format}`, data: await canvasToBytes(coverCanvas) })
         parts.push('封面')
@@ -822,6 +826,7 @@ export default function App() {
           color: coverColor,
           bgImage: coverBgImage ?? undefined,
           bgOpacity: coverBgOpacity,
+          showRibbon,
         })
         zipEntries.push({ name: `${fontBaseName(loaded.fileName)}-cover.${format}`, data: await canvasToBytes(coverCanvas) })
         parts.push('封面')
@@ -967,6 +972,7 @@ export default function App() {
             color: coverColor,
             bgImage: coverBgImage ?? undefined,
             bgOpacity: coverBgOpacity,
+            showRibbon,
           })
           zipEntries.push({ name: `${base}-cover.${format}`, data: await canvasToBytes(coverCanvas) })
           imageCount++
@@ -980,6 +986,7 @@ export default function App() {
             color: coverColor,
             bgImage: coverBgImage ?? undefined,
             bgOpacity: coverBgOpacity,
+            showRibbon,
           })
           zipEntries.push({ name: `${base}-cover.${format}`, data: await canvasToBytes(coverCanvas) })
           imageCount++
@@ -1369,6 +1376,15 @@ export default function App() {
                         </button>
                       </div>
                     )}
+                    <div className="cover-bg-row">
+                      <label className="cover-bg-label">免费商用丝带</label>
+                      <button
+                        className={`ghost cover-bg-btn${showRibbon ? ' active' : ''}`}
+                        onClick={() => setShowRibbon(!showRibbon)}
+                      >
+                        {showRibbon ? '显示' : '隐藏'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1412,12 +1428,6 @@ export default function App() {
         <div className="lightbox-overlay" onClick={closeLightbox}>
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <button className="lightbox-close" onClick={closeLightbox} title="关闭 (Esc)">✕</button>
-            {previewItems.length > 1 && (
-              <>
-                <button className="lightbox-nav lightbox-prev" onClick={lightboxPrev} title="上一张 (←)">‹</button>
-                <button className="lightbox-nav lightbox-next" onClick={lightboxNext} title="下一张 (→)">›</button>
-              </>
-            )}
             <img src={previewItems[lightboxIndex]!.dataUrl} alt={previewItems[lightboxIndex]!.caption} />
             <div className="lightbox-caption">
               {previewItems[lightboxIndex]!.caption}
@@ -1426,6 +1436,16 @@ export default function App() {
               )}
             </div>
           </div>
+          {previewItems.length > 1 && (
+            <>
+              <button className="lightbox-nav lightbox-prev" onClick={(e) => { e.stopPropagation(); lightboxPrev() }} title="上一张 (←)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 4L6 10L12 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              <button className="lightbox-nav lightbox-next" onClick={(e) => { e.stopPropagation(); lightboxNext() }} title="下一张 (→)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 4L14 10L8 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </>
+          )}
         </div>
       )}
 

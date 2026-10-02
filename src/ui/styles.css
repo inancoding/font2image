@@ -1046,13 +1046,13 @@ button:disabled {
 }
 
 .lightbox-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  margin: auto;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   color: #fff;
-  font-size: 36px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -1062,20 +1062,30 @@ button:disabled {
   justify-content: center;
   transition: background 0.15s;
   padding: 0;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 10001;
 }
 
 .lightbox-nav:hover {
   background: rgba(255, 255, 255, 0.3);
-  color: #fff;
-  border: none;
+}
+
+.lightbox-nav:active {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.lightbox-nav:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .lightbox-prev {
-  left: -60px;
+  left: 20px;
 }
 
 .lightbox-next {
-  right: -60px;
+  right: 20px;
 }
 
 .lightbox-caption {
