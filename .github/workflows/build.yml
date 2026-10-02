@@ -57,13 +57,6 @@ jobs:
         env:
           DEBUG: electron-builder
 
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.platform }}-build-logs
-          path: build.log
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
