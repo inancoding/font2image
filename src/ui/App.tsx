@@ -97,6 +97,8 @@ export default function App() {
   const [coverBgOpacity, setCoverBgOpacity] = useState(0.35)
   const [coverWhiteText, setCoverWhiteText] = useState(false)
   const [showRibbon, setShowRibbon] = useState(true)
+  const [outputDir, setOutputDir] = useState<string | null>(null)
+  const isElectron = !!window.electronAPI?.isElectron
   const faceRef = useRef<FontFace | null>(null)
   const batchFacesRef = useRef<FontFace[]>([])
   const multiWeightFacesRef = useRef<FontFace[]>([])
@@ -109,6 +111,23 @@ export default function App() {
     const id = toastIdRef.current++
     setToasts((prev) => [...prev, { id, text, type }])
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000)
+  }
+
+  useEffect(() => {
+    if (isElectron) {
+      window.electronAPI!.getOutputDir().then((dir) => {
+        if (dir) setOutputDir(dir)
+      })
+    }
+  }, [isElectron])
+
+  async function selectOutputDir() {
+    if (!isElectron) return
+    const dir = await window.electronAPI!.selectDirectory()
+    if (dir) {
+      setOutputDir(dir)
+      showToast(`输出目录：${dir}`)
+    }
   }
 
   function clearSingleFace() {
@@ -754,7 +773,12 @@ export default function App() {
     return new Uint8Array(await blob.arrayBuffer())
   }
 
-  function downloadBlob(blob: Blob, fileName: string) {
+  async function downloadBlob(blob: Blob, fileName: string) {
+    if (isElectron && outputDir) {
+      const buffer = new Uint8Array(await blob.arrayBuffer())
+      await window.electronAPI!.saveImage(fileName, buffer)
+      return
+    }
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = fileName
@@ -771,12 +795,16 @@ export default function App() {
       canvas.toBlob(resolve, mimeType(format), format === 'png' ? undefined : DEFAULT_CONFIG.quality / 100),
     )
     if (!blob) return false
-    downloadBlob(blob, fileName)
+    await downloadBlob(blob, fileName)
     return true
   }
 
   async function generate() {
     if (!loaded) return
+    if (isElectron && !outputDir) {
+      showToast('请先选择输出目录', 'error')
+      return
+    }
     setGenerating(true)
     try {
       await document.fonts.ready
@@ -922,11 +950,12 @@ export default function App() {
       for (let i = 0; i < zipEntries.length; i++) {
         const entry = zipEntries[i]!
         const blob = new Blob([entry.data.buffer.slice(entry.data.byteOffset, entry.data.byteOffset + entry.data.byteLength) as ArrayBuffer], { type: mimeType(format) })
-        downloadBlob(blob, entry.name)
+        await downloadBlob(blob, entry.name)
         if (i < zipEntries.length - 1) await sleep(150)
       }
 
-      showToast(zipEntries.length > 0 ? `已生成 ${zipEntries.length} 张图片（${parts.join('、')}）` : '没有可生成的图片')
+      const suffix = isElectron ? ` → ${outputDir}` : ''
+      showToast(zipEntries.length > 0 ? `已生成 ${zipEntries.length} 张图片（${parts.join('、')}）${suffix}` : '没有可生成的图片')
     } finally {
       setGenerating(false)
     }
@@ -935,6 +964,10 @@ export default function App() {
   // 批量生成：全局设置 + 每字体自动判定，命名规则与 CLI 一致，逐个下载
   async function generateBatch() {
     if (!batch) return
+    if (isElectron && !outputDir) {
+      showToast('请先选择输出目录', 'error')
+      return
+    }
     const items = batch.filter((entry) => entry.status === 'ok' && entry.loaded && entry.faceFamily)
     if (items.length === 0) return
     setGenerating(true)
@@ -991,10 +1024,11 @@ export default function App() {
       for (let i = 0; i < zipEntries.length; i++) {
         const entry = zipEntries[i]!
         const blob = new Blob([entry.data.buffer.slice(entry.data.byteOffset, entry.data.byteOffset + entry.data.byteLength) as ArrayBuffer], { type: mimeType(format) })
-        downloadBlob(blob, entry.name)
+        await downloadBlob(blob, entry.name)
         if (i < zipEntries.length - 1) await sleep(150)
       }
-      showToast(`已生成 ${imageCount} 张图片`)
+      const suffix = isElectron ? ` → ${outputDir}` : ''
+      showToast(`已生成 ${imageCount} 张图片${suffix}`)
     } finally {
       setGenerating(false)
     }
@@ -1006,7 +1040,7 @@ export default function App() {
     <div className="app">
       <header className="hero">
         <div className="brand">
-          <img className="brand-mark" src="/logo.png" alt="" />
+          <img className="brand-mark" src="./logo.png" alt="" />
           <div>
             <h1>font2image</h1>
             <p className="subtitle">本地离线字体预览图生成器 · 选择字体 → 挑选诗词 → 生成图片（支持批量）</p>
@@ -1267,7 +1301,7 @@ export default function App() {
               >
                 {generating
                   ? `生成中 ${genDone}/${batchOkCount}…`
-                  : `生成并下载（${batchOkCount} 个字体 + 封面）`}
+                  : `生成并保存（${batchOkCount} 个字体 + 封面）`}
               </button>
             </section>
           )}
@@ -1276,6 +1310,26 @@ export default function App() {
             <>
               <section className="card">
                 <h2>输出选项</h2>
+                {isElectron && (
+                  <div className="options-row" style={{ marginBottom: 8 }}>
+                    <label style={{ flex: 1 }}>
+                      <span className="field-label">输出目录</span>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          value={outputDir || ''}
+                          readOnly
+                          placeholder="点击右侧按钮选择目录"
+                          style={{ flex: 1, cursor: 'pointer' }}
+                          onClick={selectOutputDir}
+                        />
+                        <button className="ghost" onClick={selectOutputDir} style={{ whiteSpace: 'nowrap' }}>
+                          选择目录
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+                )}
                 <div className="options-row">
                   <label>
                     <span className="field-label">格式</span>
@@ -1400,7 +1454,7 @@ export default function App() {
               >
                 {generating
                   ? '生成中…'
-                  : `生成并下载（封面${gridPreview?.dataUrl ? ' + 单字' : ''}${multiWeightPreview?.dataUrl ? ' + 多字重' : ''}）`}
+                  : `生成并保存（封面${gridPreview?.dataUrl ? ' + 单字' : ''}${multiWeightPreview?.dataUrl ? ' + 多字重' : ''}）`}
               </button>
             </section>
           )}

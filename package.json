@@ -1,14 +1,85 @@
 {
   "name": "font2image",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "本地离线字体预览图生成工具（字体 → PNG/WebP/JPG）",
+  "author": {
+    "name": "nancoding"
+  },
+  "main": "electron/main.js",
   "scripts": {
     "gen": "tsx src/cli/index.ts",
     "ui": "vite",
     "build:ui": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "pnpm run build:ui && electron-builder",
+    "electron:build:win": "pnpm run build:ui && electron-builder --win --x64",
+    "electron:build:linux": "pnpm run build:ui && electron-builder --linux --x64",
+    "electron:build:mac": "pnpm run build:ui && electron-builder --mac --x64",
+    "electron:build:all": "pnpm run build:ui && electron-builder --win --linux --mac --x64"
+  },
+  "build": {
+    "appId": "com.font2image.app",
+    "productName": "字体预览图生成工具",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "字体预览图生成工具"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Graphics"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.graphics-design"
+    }
   },
   "dependencies": {
     "commander": "^12.1.0",
@@ -20,10 +91,14 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "concurrently": "^10.0.5",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "wait-on": "^9.5.1"
   }
 }
