@@ -1,0 +1,83 @@
+name: Build Electron App
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            ext: exe
+            build-cmd: electron:build:win
+          - os: ubuntu-latest
+            platform: linux
+            ext: rpm
+            build-cmd: electron:build:linux
+          - os: macos-latest
+            platform: mac
+            ext: dmg
+            build-cmd: electron:build:mac
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Electron app
+        run: pnpm run ${{ matrix.build-cmd }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-installer
+          path: |
+            release/*.exe
+            release/*.rpm
+            release/*.deb
+            release/*.dmg
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.rpm
+            artifacts/**/*.deb
+            artifacts/**/*.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
