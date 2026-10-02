@@ -46,7 +46,14 @@ jobs:
 
       - name: Build Electron app
         run: |
-          pnpm run ${{ matrix.build-cmd }} 2>&1 | tee build.log
+          set -e
+          echo "Starting build process..."
+          echo "Current directory: $(pwd)"
+          echo "Listing files:"
+          ls -la
+          echo "Building with command: ${{ matrix.build-cmd }}"
+          pnpm run ${{ matrix.build-cmd }}
+          echo "Build complete!"
         env:
           DEBUG: electron-builder
 
