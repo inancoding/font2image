@@ -1,6 +1,6 @@
 {
   "name": "font2image",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "description": "本地离线字体预览图生成工具（字体 → PNG/WebP/JPG）",
@@ -24,6 +24,7 @@
   "build": {
     "appId": "com.font2image.app",
     "productName": "字体预览图生成工具",
+    "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "release",
       "buildResources": "build"
