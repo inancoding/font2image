@@ -45,17 +45,8 @@ jobs:
         run: pnpm install
 
       - name: Build Electron app
-        run: |
-          set -e
-          echo "Starting build process..."
-          echo "Current directory: $(pwd)"
-          echo "Listing files:"
-          ls -la
-          echo "Building with command: ${{ matrix.build-cmd }}"
-          pnpm run ${{ matrix.build-cmd }}
-          echo "Build complete!"
-        env:
-          DEBUG: electron-builder
+        run: pnpm run ${{ matrix.build-cmd }}
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
