@@ -115,9 +115,15 @@ export default function App() {
 
   useEffect(() => {
     if (isElectron) {
+      console.log('Electron detected, loading output dir...')
       window.electronAPI!.getOutputDir().then((dir) => {
+        console.log('Output dir loaded:', dir)
         if (dir) setOutputDir(dir)
+      }).catch((err) => {
+        console.error('Failed to load output dir:', err)
       })
+    } else {
+      console.log('Not in Electron environment')
     }
   }, [isElectron])
 
@@ -774,11 +780,21 @@ export default function App() {
   }
 
   async function downloadBlob(blob: Blob, fileName: string) {
+    console.log('downloadBlob called:', { isElectron, outputDir, fileName })
     if (isElectron && outputDir) {
-      const buffer = new Uint8Array(await blob.arrayBuffer())
-      await window.electronAPI!.saveImage(fileName, buffer)
-      return
+      try {
+        console.log('Using Electron API to save:', fileName)
+        const buffer = new Uint8Array(await blob.arrayBuffer())
+        const savedPath = await window.electronAPI!.saveImage(fileName, buffer)
+        console.log('Saved to:', savedPath)
+        return
+      } catch (err) {
+        console.error('Electron save failed:', err)
+        showToast(`保存失败: ${err instanceof Error ? err.message : String(err)}`, 'error')
+        return
+      }
     }
+    console.log('Falling back to browser download')
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = fileName

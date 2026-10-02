@@ -1,6 +1,6 @@
 {
   "name": "font2image",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "private": true,
   "type": "module",
   "description": "本地离线字体预览图生成工具（字体 → PNG/WebP/JPG）",
