@@ -15,28 +15,19 @@ export const UNICODE_BLOCKS: UnicodeBlock[] = [
   { name: 'CJK符号标点', start: 0x3000, end: 0x303f },
   { name: 'CJK扩展A', start: 0x3400, end: 0x4dbf },
   { name: 'CJK统一汉字', start: 0x4e00, end: 0x9fff },
-  { name: 'CJK兼容汉字', start: 0xf900, end: 0xfaff },
-  { name: '注音符号', start: 0x3100, end: 0x312f },
 
   // 日文
   { name: '日文平假名', start: 0x3040, end: 0x309f },
   { name: '日文片假名', start: 0x30a0, end: 0x30ff },
 
   // 韩文
-  { name: '韩文兼容字母', start: 0x3130, end: 0x318f },
   { name: '韩文谚文', start: 0xac00, end: 0xd7af },
 
   // 全角半角
   { name: '全角半角', start: 0xff00, end: 0xffef },
 
-  // 符号
+  // 通用符号
   { name: '通用标点', start: 0x2000, end: 0x206f },
-  { name: '货币符号', start: 0x20a0, end: 0x20cf },
-  { name: '箭头', start: 0x2190, end: 0x21ff },
-  { name: '数学运算符', start: 0x2200, end: 0x22ff },
-  { name: '制表符', start: 0x2500, end: 0x257f },
-  { name: '几何图形', start: 0x25a0, end: 0x25ff },
-  { name: '杂项符号', start: 0x2600, end: 0x26ff },
 ]
 
 export interface BlockCoverage {
