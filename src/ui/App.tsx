@@ -3,6 +3,7 @@ import { SCRIPT_LABELS, SCRIPT_ORDER } from '../core/charsets'
 import { DEFAULT_CONFIG } from '../core/config'
 import { computeCoverage, detectLanguage } from '../core/detect'
 import { dedupe, fontBaseName } from '../core/naming'
+import { computeUnicodeBlockCoverage, type BlockCoverage } from '../core/unicode-blocks'
 import type {
   CharsetInfo,
   CoverageResult,
@@ -55,6 +56,7 @@ interface LoadedFont {
   coverage: CoverageResult
   detection: DetectionResult
   charset: CharsetInfo
+  unicodeBlocks: BlockCoverage[]
 }
 
 interface Preview {
@@ -287,6 +289,7 @@ export default function App() {
       const coverage = computeCoverage(hasGlyph)
       const detection = detectLanguage(coverage, DEFAULT_CONFIG.threshold)
       const charset = extractCharsetInfo(main.font, hasGlyph)
+      const unicodeBlocks = computeUnicodeBlockCoverage(hasGlyph)
 
       clearSingleFace()
       clearMultiWeightFaces()
@@ -303,7 +306,7 @@ export default function App() {
       // 使用规范化的家族名（首字母大写，去除字重后缀）
       const displayFamilyName = main.familyKey.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
       const normalizedMeta = { ...main.meta, family: { zh: main.meta.family.zh, en: displayFamilyName } }
-      setLoaded({ fileName: main.file.name, bytes: main.bytes, font: main.font, meta: normalizedMeta, coverage, detection, charset })
+      setLoaded({ fileName: main.file.name, bytes: main.bytes, font: main.font, meta: normalizedMeta, coverage, detection, charset, unicodeBlocks })
       setSelected(detection.scripts)
       setEditFamilyName('')
       setCoverBgImage(null)
@@ -457,6 +460,7 @@ export default function App() {
       const coverage = computeCoverage(hasGlyph)
       const detection = detectLanguage(coverage, DEFAULT_CONFIG.threshold)
       const charset = extractCharsetInfo(font, hasGlyph)
+      const unicodeBlocks = computeUnicodeBlockCoverage(hasGlyph)
 
       clearSingleFace()
       const face = new FontFace('f2i-preview', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
@@ -473,7 +477,7 @@ export default function App() {
         setUseOpentypeFallback(true)
       }
 
-      setLoaded({ fileName: file.name, bytes, font, meta, coverage, detection, charset })
+      setLoaded({ fileName: file.name, bytes, font, meta, coverage, detection, charset, unicodeBlocks })
       setSelected(detection.scripts)
       setEditFamilyName('')
 
@@ -1180,27 +1184,33 @@ export default function App() {
                   <dt>字形总数</dt>
                   <dd>{loaded.charset.glyphCount > 0 ? loaded.charset.glyphCount.toLocaleString('zh-CN') : '—'}</dd>
                 </dl>
-                <div className="detect-row">
-                  <span className="detect-label">判定结果</span>
-                  <span className="badge-hover-wrap">
+                <div className="unicode-blocks-section">
+                  <div className="unicode-blocks-header">
+                    <span className="detect-label">Unicode 块覆盖</span>
                     <span className="badge">{LANG_LABELS[loaded.detection.lang]}</span>
-                    <div className="coverage-popup">
-                      <div className="coverage-list">
-                        {SCRIPT_ORDER.map((s) => (
-                          <div className="coverage-row" key={s}>
-                            <span className="label">{SCRIPT_LABELS[s]}</span>
-                            <div className="coverage-bar">
-                              <div style={{ width: `${Math.round(loaded.coverage[s] * 100)}%` }} />
-                            </div>
-                            <span className="pct">{Math.round(loaded.coverage[s] * 100)}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </span>
-                  <button className="ghost" onClick={() => setSelected(loaded.detection.scripts)}>
-                    恢复自动判定
-                  </button>
+                    <button className="ghost" onClick={() => setSelected(loaded.detection.scripts)}>
+                      恢复自动判定
+                    </button>
+                  </div>
+                  <div className="unicode-blocks-grid">
+                    {loaded.unicodeBlocks
+                      .filter((b) => b.coverage > 0)
+                      .sort((a, b) => b.coverage - a.coverage)
+                      .map((b) => (
+                        <div
+                          key={b.block.name}
+                          className={`unicode-block ${b.block.category}`}
+                          style={{ '--coverage': b.coverage } as React.CSSProperties}
+                          title={`${b.block.name}\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
+                        >
+                          <span className="block-name">{b.block.name}</span>
+                          <span className="block-pct">{Math.round(b.coverage * 100)}%</span>
+                        </div>
+                      ))}
+                  </div>
+                  {loaded.unicodeBlocks.every((b) => b.coverage === 0) && (
+                    <p className="hint">未检测到 Unicode 块覆盖</p>
+                  )}
                 </div>
                 <p className="hint">手动勾选要展示的字符类型（FR-3.4），至少保留一项：</p>
                 <div className="checkbox-row">
