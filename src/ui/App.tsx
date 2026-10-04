@@ -1201,9 +1201,9 @@ export default function App() {
                           key={b.block.name}
                           className={`unicode-block ${b.block.category}`}
                           style={{ '--coverage': b.coverage } as React.CSSProperties}
-                          title={`${b.block.name}\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
+                          title={`${b.block.nameZh} (${b.block.name})\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
                         >
-                          <span className="block-name">{b.block.name}</span>
+                          <span className="block-name">{b.block.nameZh}</span>
                           <span className="block-pct">{Math.round(b.coverage * 100)}%</span>
                         </div>
                       ))}
