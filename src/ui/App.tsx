@@ -1184,33 +1184,36 @@ export default function App() {
                   <dt>字形总数</dt>
                   <dd>{loaded.charset.glyphCount > 0 ? loaded.charset.glyphCount.toLocaleString('zh-CN') : '—'}</dd>
                 </dl>
-                <div className="unicode-blocks-section">
-                  <div className="unicode-blocks-header">
-                    <span className="detect-label">Unicode 块覆盖</span>
+                <div className="detect-row">
+                  <span className="detect-label">判定结果</span>
+                  <span className="badge-hover-wrap">
                     <span className="badge">{LANG_LABELS[loaded.detection.lang]}</span>
-                    <button className="ghost" onClick={() => setSelected(loaded.detection.scripts)}>
-                      恢复自动判定
-                    </button>
-                  </div>
-                  <div className="unicode-blocks-grid">
-                    {loaded.unicodeBlocks
-                      .filter((b) => b.coverage > 0)
-                      .sort((a, b) => b.coverage - a.coverage)
-                      .map((b) => (
-                        <div
-                          key={b.block.name}
-                          className="unicode-block"
-                          style={{ '--coverage': b.coverage } as React.CSSProperties}
-                          title={`${b.block.name}\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
-                        >
-                          <span className="block-name">{b.block.name}</span>
-                          <span className="block-pct">{Math.round(b.coverage * 100)}%</span>
-                        </div>
-                      ))}
-                  </div>
-                  {loaded.unicodeBlocks.every((b) => b.coverage === 0) && (
-                    <p className="hint">未检测到 Unicode 块覆盖</p>
-                  )}
+                    <div className="unicode-popup">
+                      <div className="unicode-popup-title">Unicode 块覆盖</div>
+                      <div className="unicode-blocks-grid">
+                        {loaded.unicodeBlocks
+                          .filter((b) => b.coverage > 0)
+                          .sort((a, b) => b.coverage - a.coverage)
+                          .map((b) => (
+                            <div
+                              key={b.block.name}
+                              className="unicode-block"
+                              style={{ '--coverage': b.coverage } as React.CSSProperties}
+                              title={`${b.block.name}\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
+                            >
+                              <span className="block-name">{b.block.name}</span>
+                              <span className="block-pct">{Math.round(b.coverage * 100)}%</span>
+                            </div>
+                          ))}
+                      </div>
+                      {loaded.unicodeBlocks.every((b) => b.coverage === 0) && (
+                        <p className="hint">未检测到 Unicode 块覆盖</p>
+                      )}
+                    </div>
+                  </span>
+                  <button className="ghost" onClick={() => setSelected(loaded.detection.scripts)}>
+                    恢复自动判定
+                  </button>
                 </div>
                 <p className="hint">手动勾选要展示的字符类型（FR-3.4），至少保留一项：</p>
                 <div className="checkbox-row">
@@ -1227,9 +1230,6 @@ export default function App() {
 
           {loaded && (
             <section className="card">
-              <h2>预览内容编辑</h2>
-              <p className="hint">自定义单字预览和多字重预览的内容</p>
-
               {/* 单字预览编辑 */}
               {(selected.includes('hans') || selected.includes('hant') || selected.includes('letter') || selected.includes('digit')) && (
                 <div className="edit-section">
