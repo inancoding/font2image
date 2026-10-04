@@ -1079,7 +1079,7 @@ export default function App() {
           <img className="brand-mark" src="./logo.png" alt="" />
           <div>
             <h1>font2image</h1>
-            <p className="subtitle">本地离线字体预览图生成器 · 选择字体 → 挑选诗词 → 生成图片（支持批量）</p>
+            <p className="subtitle">本地离线字体预览图生成器</p>
           </div>
         </div>
       </header>
@@ -1527,8 +1527,6 @@ export default function App() {
           )}
         </div>
       )}
-
-      <footer className="footer">font2image · 离线渲染，不上传任何字体文件</footer>
     </div>
   )
 }
