@@ -1190,18 +1190,16 @@ export default function App() {
                     <span className="badge">{LANG_LABELS[loaded.detection.lang]}</span>
                     <div className="unicode-popup">
                       <div className="unicode-popup-title">Unicode 块覆盖</div>
-                      <div className="unicode-blocks-grid">
+                      <div className="unicode-blocks-list">
                         {loaded.unicodeBlocks
                           .filter((b) => b.coverage > 0)
                           .sort((a, b) => b.coverage - a.coverage)
                           .map((b) => (
-                            <div
-                              key={b.block.name}
-                              className="unicode-block"
-                              style={{ '--coverage': b.coverage } as React.CSSProperties}
-                              title={`${b.block.name}\nU+${b.block.start.toString(16).toUpperCase().padStart(4, '0')}–U+${b.block.end.toString(16).toUpperCase().padStart(4, '0')}\n覆盖率: ${Math.round(b.coverage * 100)}%`}
-                            >
+                            <div key={b.block.name} className="unicode-block-row">
                               <span className="block-name">{b.block.name}</span>
+                              <div className="block-bar">
+                                <div style={{ width: `${Math.round(b.coverage * 100)}%` }} />
+                              </div>
                               <span className="block-pct">{Math.round(b.coverage * 100)}%</span>
                             </div>
                           ))}
