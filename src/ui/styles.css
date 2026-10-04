@@ -246,6 +246,13 @@ body {
   color: var(--text);
 }
 
+.license-toggle {
+  font-size: 11px;
+  padding: 1px 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .family-name-edit {
   display: flex;
   align-items: center;

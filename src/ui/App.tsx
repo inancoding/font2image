@@ -48,6 +48,22 @@ function ShowcaseLines({ lines, color }: { lines: string[]; color: string }) {
   )
 }
 
+const LICENSE_MAX_LEN = 80
+
+function LicenseText({ text }: { text?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  if (!text) return <>（字体未提供授权信息）</>
+  if (text.length <= LICENSE_MAX_LEN) return <>{text}</>
+  return (
+    <>
+      {expanded ? text : text.slice(0, LICENSE_MAX_LEN) + '...'}
+      <button className="ghost license-toggle" onClick={() => setExpanded(!expanded)}>
+        {expanded ? '收起' : '展开'}
+      </button>
+    </>
+  )
+}
+
 interface LoadedFont {
   fileName: string
   bytes: Uint8Array
@@ -1171,7 +1187,9 @@ export default function App() {
                     </>
                   )}
                   <dt>授权</dt>
-                  <dd>{loaded.meta.license ?? '（字体未提供授权信息）'}</dd>
+                  <dd>
+                    <LicenseText text={loaded.meta.license} />
+                  </dd>
                   {(() => {
                     const c = loaded.charset
                     const labels: string[] = []
