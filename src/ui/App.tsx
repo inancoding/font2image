@@ -844,6 +844,17 @@ export default function App() {
     setGenerating(true)
     try {
       await document.fonts.ready
+      // 预加载背景图片，确保 drawCover 同步绘制时图片已就绪
+      if (coverBgImage) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const img = new Image()
+            img.onload = () => resolve()
+            img.onerror = () => reject(new Error('背景图加载失败'))
+            img.src = coverBgImage
+          })
+        } catch { /* 加载失败则跳过背景图 */ }
+      }
       const hasGlyph = makeHasGlyph(loaded.font)
       const isTransparent = transparentBg && format !== 'jpg'
       const background = isTransparent ? 'transparent' : DEFAULT_CONFIG.background
@@ -1010,6 +1021,17 @@ export default function App() {
     setGenDone(0)
     try {
       await document.fonts.ready
+      // 预加载背景图片，确保 drawCover 同步绘制时图片已就绪
+      if (coverBgImage) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const img = new Image()
+            img.onload = () => resolve()
+            img.onerror = () => reject(new Error('背景图加载失败'))
+            img.src = coverBgImage
+          })
+        } catch { /* 加载失败则跳过背景图 */ }
+      }
       const zipEntries: { name: string; data: Uint8Array }[] = []
       const used = new Set<string>()
       let imageCount = 0
