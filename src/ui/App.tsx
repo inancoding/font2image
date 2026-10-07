@@ -106,7 +106,7 @@ export default function App() {
   const [multiWeightPreview, setMultiWeightPreview] = useState<Preview | null>(null)
   const [multiWeightFaces, setMultiWeightFaces] = useState<{ name: string; bytes: Uint8Array; weightClass: number; family: string }[]>([])
   const [gridBoldFace, setGridBoldFace] = useState<{ name: string; bytes: Uint8Array; weightClass: number; family: string } | null>(null)
-  const [editFamilyName, setEditFamilyName] = useState('')
+  const [editFamilyName, setEditFamilyName] = useState<string | null>(null)
   const [useOpentypeFallback, setUseOpentypeFallback] = useState(false)
   const [poemIndex, setPoemIndex] = useState(0)
   const [dragWeightIndex, setDragWeightIndex] = useState<number | null>(null)
@@ -324,7 +324,7 @@ export default function App() {
       const normalizedMeta = { ...main.meta, family: { zh: main.meta.family.zh, en: displayFamilyName } }
       setLoaded({ fileName: main.file.name, bytes: main.bytes, font: main.font, meta: normalizedMeta, coverage, detection, charset, unicodeBlocks })
       setSelected(detection.scripts)
-      setEditFamilyName('')
+      setEditFamilyName(null)
       setCoverBgImage(null)
       setCoverBgOpacity(0.35)
       setCoverWhiteText(false)
@@ -495,7 +495,7 @@ export default function App() {
 
       setLoaded({ fileName: file.name, bytes, font, meta, coverage, detection, charset, unicodeBlocks })
       setSelected(detection.scripts)
-      setEditFamilyName('')
+      setEditFamilyName(null)
 
       // 检测多字重（TTC 包含多个面）
       if (isTtc(rawBytes)) {
@@ -544,7 +544,7 @@ export default function App() {
   }
 
   const autoFamilyName = loaded ? (loaded.meta.family.zh || loaded.meta.family.en || fontBaseName(loaded.fileName)) : ''
-  const displayName = editFamilyName || autoFamilyName
+  const displayName = editFamilyName !== null ? editFamilyName : autoFamilyName
   const coverColor = coverWhiteText ? '#ffffff' : '#000000'
 
   useEffect(() => {
@@ -1144,7 +1144,7 @@ export default function App() {
             </section>
 
             {loaded && (
-              <section className="card">
+              <section className="card card-compact">
                 <h2>字体信息与语种判定</h2>
                 <dl className="meta-grid compact">
                   <dt>家族名</dt>
@@ -1156,8 +1156,8 @@ export default function App() {
                       placeholder={autoFamilyName}
                       title="可修改字体名称，将同步到预览图与封面图"
                     />
-                    {editFamilyName && (
-                      <button className="ghost family-reset" onClick={() => setEditFamilyName('')} title="恢复原始名称">
+                    {editFamilyName !== null && (
+                      <button className="ghost family-reset" onClick={() => setEditFamilyName(null)} title="恢复原始名称">
                         还原
                       </button>
                     )}

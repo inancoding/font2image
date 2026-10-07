@@ -247,11 +247,26 @@ body {
 }
 
 .meta-grid.compact {
-  row-gap: 6px;
+  row-gap: 4px;
   font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .meta-grid.compact dt {
+  font-size: 12px;
+}
+
+.card.card-compact {
+  padding: 14px 16px;
+}
+
+.card.card-compact h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.card.card-compact .detect-row {
+  margin-bottom: 8px;
   font-size: 12px;
 }
 
