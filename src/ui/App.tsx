@@ -1146,7 +1146,7 @@ export default function App() {
             {loaded && (
               <section className="card">
                 <h2>字体信息与语种判定</h2>
-                <dl className="meta-grid">
+                <dl className="meta-grid compact">
                   <dt>家族名</dt>
                   <dd className="family-name-edit">
                     <input
@@ -1163,7 +1163,10 @@ export default function App() {
                     )}
                   </dd>
                   <dt>风格</dt>
-                  <dd>{loaded.meta.style}</dd>
+                  <dd className="meta-inline">
+                    <span>{loaded.meta.style}</span>
+                    {loaded.meta.version && <span className="meta-version">{loaded.meta.version}</span>}
+                  </dd>
                   {multiWeightFaces.length > 1 && (
                     <>
                       <dt>粗体字重</dt>
@@ -1190,17 +1193,18 @@ export default function App() {
                   <dd>
                     <LicenseText text={loaded.meta.license} />
                   </dd>
-                  {(() => {
-                    const c = loaded.charset
-                    const labels: string[] = []
-                    if (c.gbk > 0.5) labels.push('GBK')
-                    else if (c.gb2312 > 0.5) labels.push('GB2312')
-                    if (c.big5 > 0.5) labels.push('Big5')
-                    if (labels.length === 0) return null
-                    return (<><dt>字符集</dt><dd>{labels.join(' / ')}</dd></>)
-                  })()}
-                  <dt>字形总数</dt>
-                  <dd>{loaded.charset.glyphCount > 0 ? loaded.charset.glyphCount.toLocaleString('zh-CN') : '—'}</dd>
+                  <dt>字符集</dt>
+                  <dd className="meta-inline">
+                    {(() => {
+                      const c = loaded.charset
+                      const labels: string[] = []
+                      if (c.gbk > 0.5) labels.push('GBK')
+                      else if (c.gb2312 > 0.5) labels.push('GB2312')
+                      if (c.big5 > 0.5) labels.push('Big5')
+                      return labels.length > 0 ? <span>{labels.join(' / ')}</span> : <span className="text-muted">—</span>
+                    })()}
+                    <span className="meta-glyphs">{loaded.charset.glyphCount > 0 ? `${loaded.charset.glyphCount.toLocaleString('zh-CN')} 字形` : ''}</span>
+                  </dd>
                 </dl>
                 <div className="detect-row">
                   <span className="detect-label">判定结果</span>

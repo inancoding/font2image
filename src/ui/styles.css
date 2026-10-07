@@ -246,6 +246,39 @@ body {
   color: var(--text);
 }
 
+.meta-grid.compact {
+  row-gap: 6px;
+  font-size: 12px;
+}
+
+.meta-grid.compact dt {
+  font-size: 12px;
+}
+
+.meta-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-version {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.meta-glyphs {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.text-muted {
+  color: var(--text-3);
+}
+
 .license-toggle {
   font-size: 11px;
   padding: 1px 6px;

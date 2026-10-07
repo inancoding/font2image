@@ -26,6 +26,7 @@ export interface DetectionResult {
 export interface FontMeta {
   family: { en?: string; zh?: string }
   style: string
+  version?: string
   license?: string
 }
 

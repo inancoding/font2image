@@ -89,10 +89,12 @@ export function extractMeta(font: OTFont, fileName: string): FontMeta {
     family.en = fileName.replace(/\.[^.]+$/, '')
   }
   const styleEntry = pickName(resolveNameEntry(names, 'fontSubfamily'))
+  const versionEntry = pickName(resolveNameEntry(names, 'version'))
   const licenseEntry = pickName(resolveNameEntry(names, 'license') ?? resolveNameEntry(names, 'licenseDescription'))
   return {
     family,
     style: styleEntry.en ?? styleEntry.zh ?? 'Regular',
+    version: versionEntry.en ?? versionEntry.zh,
     license: licenseEntry.en ?? licenseEntry.zh,
   }
 }
